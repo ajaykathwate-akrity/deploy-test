@@ -13,7 +13,13 @@ jobs:
       - name: Install Node.js and dependencies
         uses: actions/setup-node@v2
         with:
-          node-version: "14"
+          node-version: '14'
+      - name: Build the project
+        run: |
+          npm install
+          npm run build
+          ls -l  # Check current directory contents
+          ls -l dist  # Check dist directory contents
       - name: Create SSH key file
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > ec2_key.pem
@@ -22,45 +28,26 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-      - name: Test SSH connection
-        env:
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER }}
-        run: |
-          ssh -i ec2_key.pem $USER@$HOST "echo 'SSH connection successful'"
-
-      - name: Build the project
-        run: |
-          npm install  # Install dependencies if using npm
-          npm run build  # Adjust as per your build command (e.g., npm run build)
-
-      - name: List current directory and dist folder
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Contents of current directory:"
-          ls -la
-          echo "Checking dist directory:"
-          ls -la ./dist || echo "dist directory does not exist."
-
-
-      - name: Backup current deployment
-        env:
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER }}
-        run: |
-          ssh -i ec2_key.pem $USER@$HOST "sudo cp -r /var/www/project /var/www/project-backup"
+      - name: Upload artifact
+        if: success()  # Only upload artifact if the build was successful
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist-artifact
+          path: ./dist
+      - name: Download artifact
+        if: success() && github.event_name != 'workflow_dispatch'  # Only download on successful push triggers
+        uses: actions/download-artifact@v2
+        with:
+          name: dist-artifact
+          path: ./dist
       - name: Deploy to EC2
         env:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
         run: |
-          # Ensure the target directory exists
-          ssh -i ec2_key.pem $USER@$HOST "sudo mkdir -p /var/www/project"
-              
-          # Copy files from the local runner to the EC2 instance
+          ls -l  # Check current directory contents again
+          ls -l dist  # Check dist directory contents again
           scp -i ec2_key.pem -r ./dist $USER@$HOST:/var/www/project
-
       - name: Verify deployment
         env:
           HOST: ${{ secrets.EC2_HOST }}
