@@ -8,53 +8,55 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Install Node.js and dependencies
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-    - name: Build the project
-      run: |
-        npm install  # Install dependencies if using npm
-        npm run build  # Adjust as per your build command (e.g., npm run build)
-    - name: Create SSH key file
-      run: |
-        echo "${{ secrets.EC2_SSH_KEY }}" > ec2_key.pem
-        chmod 400 ec2_key.pem
-    - name: Add SSH key to known hosts
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-    - name: Test SSH connection
-      env:
-        HOST: ${{ secrets.EC2_HOST }}
-        USER: ${{ secrets.EC2_USER }}
-      run: |
-        ssh -i ec2_key.pem $USER@$HOST "echo 'SSH connection successful'"
-    - name: Backup current deployment
-      env:
-        HOST: ${{ secrets.EC2_HOST }}
-        USER: ${{ secrets.EC2_USER }}
-      run: |
-        ssh -i ec2_key.pem $USER@$HOST "sudo cp -r /var/www/project /var/www/project-backup"
-    - name: Deploy to EC2
-      env:
-        HOST: ${{ secrets.EC2_HOST }}
-        USER: ${{ secrets.EC2_USER }}
-      run: |
-        scp -i ec2_key.pem -r ./dist $USER@$HOST:/var/www/project
-    - name: Verify deployment
-      env:
-        HOST: ${{ secrets.EC2_HOST }}
-        USER: ${{ secrets.EC2_USER }}
-      run: |
-        ssh -i ec2_key.pem $USER@$HOST "echo Deployment successful."
-    - name: Manual Rollback
-      if: github.event_name == 'workflow_dispatch'
-      env:
-        HOST: ${{ secrets.EC2_HOST }}
-        USER: ${{ secrets.EC2_USER }}
-      run: |
-        ssh -i ec2_key.pem $USER@$HOST "cp -r /var/www/project-backup /var/www/project"
-        echo "Manual rollback completed."
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Node.js and dependencies
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - name: Create SSH key file
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ec2_key.pem
+          chmod 400 ec2_key.pem
+      - name: Add SSH key to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Test SSH connection
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ec2_key.pem $USER@$HOST "echo 'SSH connection successful'"
+
+      - name: Build the project
+        run: |
+          npm install  # Install dependencies if using npm
+          npm run build  # Adjust as per your build command (e.g., npm run build)
+
+      - name: Backup current deployment
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ec2_key.pem $USER@$HOST "sudo cp -r /var/www/project /var/www/project-backup"
+      - name: Deploy to EC2
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          scp -i ec2_key.pem -r ./dist $USER@$HOST:/var/www/project
+      - name: Verify deployment
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ec2_key.pem $USER@$HOST "echo Deployment successful."
+      - name: Manual Rollback
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ec2_key.pem $USER@$HOST "cp -r /var/www/project-backup /var/www/project"
+          echo "Manual rollback completed."
