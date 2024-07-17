@@ -19,6 +19,8 @@ document.querySelector('#app').innerHTML = `
       Click on the Vite logo to learn more
       Click on the Vite logo to learn more
       Click on the Vite logo to learn more
+      Click on the Vite logo to learn more
+      Click on the Vite logo to learn 
     </p>
   </div>
 `

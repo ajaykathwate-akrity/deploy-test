@@ -55,8 +55,8 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
         run: |
-          ssh -i ec2_key.pem $USER@$HOST "sudo scp -i ec2_key.pem -r ./home/runner/work/deploy-test/deploy-test
-/dist /var/www/project"
+          ssh -i ec2_key.pem $USER@$HOST "sudo scp -i ec2_key.pem -r ./home/runner/work/deploy-test/deploy-test/dist /var/www/project"
+
       - name: Verify deployment
         env:
           HOST: ${{ secrets.EC2_HOST }}
