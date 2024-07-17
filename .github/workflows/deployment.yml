@@ -34,9 +34,15 @@ jobs:
           npm install  # Install dependencies if using npm
           npm run build  # Adjust as per your build command (e.g., npm run build)
 
-      - name: Display contents of build directory
-        run: | 
-          ls -l ./dist pwd
+      - name: List current directory and dist folder
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Contents of current directory:"
+          ls -la
+          echo "Checking dist directory:"
+          ls -la ./dist || echo "dist directory does not exist."
+
 
       - name: Backup current deployment
         env:
