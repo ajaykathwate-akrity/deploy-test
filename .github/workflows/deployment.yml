@@ -34,6 +34,10 @@ jobs:
           npm install  # Install dependencies if using npm
           npm run build  # Adjust as per your build command (e.g., npm run build)
 
+      - name: Display contents of build directory
+        run: | 
+          ls -l ./dist pwd
+
       - name: Backup current deployment
         env:
           HOST: ${{ secrets.EC2_HOST }}
