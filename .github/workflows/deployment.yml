@@ -55,7 +55,11 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
         run: |
-          ssh -i ec2_key.pem $USER@$HOST "sudo scp -i ec2_key.pem -r ./home/runner/work/deploy-test/deploy-test /var/www/project"
+          # Ensure the target directory exists
+          ssh -i ec2_key.pem $USER@$HOST "sudo mkdir -p /var/www/project"
+              
+          # Copy files from the local runner to the EC2 instance
+          scp -i ec2_key.pem -r ./dist $USER@$HOST:/var/www/project
 
       - name: Verify deployment
         env:
