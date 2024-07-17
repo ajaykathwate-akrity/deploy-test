@@ -20,7 +20,7 @@ document.querySelector('#app').innerHTML = `
       Click on the Vite logo to learn more
       Click on the Vite logo to learn more
       Click on the Vite logo to learn more
-      Click on the Vite logo to learn 
+      Click on the Vite logo to 
     </p>
   </div>
 `
