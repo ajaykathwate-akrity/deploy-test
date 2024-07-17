@@ -18,16 +18,7 @@ jobs:
         run: |
           npm install
           npm run build
-          ls -l  # Check current directory contents
-          ls -l dist  # Check dist directory contents
-      - name: Create SSH key file
-        run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > ec2_key.pem
-          chmod 400 ec2_key.pem
-      - name: Add SSH key to known hosts
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
       - name: Upload artifact
         if: success()  # Only upload artifact if the build was successful
         uses: actions/upload-artifact@v2
@@ -40,6 +31,16 @@ jobs:
         with:
           name: dist-artifact
           path: ./dist
+
+      - name: Create SSH key file
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ec2_key.pem
+          chmod 400 ec2_key.pem
+      - name: Add SSH key to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
       - name: Deploy to EC2
         env:
           HOST: ${{ secrets.EC2_HOST }}
